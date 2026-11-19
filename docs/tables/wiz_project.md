@@ -144,3 +144,34 @@ from
 where
   archived = 1;
 ```
+
+### List the production cloud accounts of each project
+Find the cloud accounts linked to each project together with the environment they have in it (`PRODUCTION`, `STAGING`, `DEVELOPMENT`, `TESTING` or `OTHER`). This helps scope other tables, such as `wiz_kubernetes_cluster`, to the cloud accounts used for production.
+
+```sql+postgres
+select
+  p.name as project,
+  l -> 'cloudAccount' ->> 'name' as cloud_account,
+  l -> 'cloudAccount' ->> 'externalId' as cloud_account_external_id,
+  l ->> 'environment' as environment
+from
+  wiz_project as p,
+  jsonb_array_elements(p.cloud_account_links) as l
+where
+  not p.archived
+  and l ->> 'environment' = 'PRODUCTION';
+```
+
+```sql+sqlite
+select
+  p.name as project,
+  json_extract(l.value, '$.cloudAccount.name') as cloud_account,
+  json_extract(l.value, '$.cloudAccount.externalId') as cloud_account_external_id,
+  json_extract(l.value, '$.environment') as environment
+from
+  wiz_project as p,
+  json_each(p.cloud_account_links) as l
+where
+  p.archived = 0
+  and json_extract(l.value, '$.environment') = 'PRODUCTION';
+```

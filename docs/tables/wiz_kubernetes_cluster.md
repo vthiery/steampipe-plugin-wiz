@@ -14,6 +14,7 @@ The `wiz_kubernetes_cluster` table lists every Kubernetes cluster in the Wiz Sec
 ## Examples
 
 ### Basic info
+Get an overview of the clusters Wiz knows about, with their Kubernetes version and whether the Wiz runtime sensor is deployed. This is a good starting point to see which clusters exist and where they run.
 
 ```sql+postgres
 select
@@ -40,6 +41,7 @@ from
 ```
 
 ### List active clusters without the Wiz runtime sensor
+Find the active clusters that do not run the Wiz runtime sensor. This helps identify gaps in runtime protection coverage so you can prioritize where to deploy the sensor.
 
 ```sql+postgres
 select
@@ -68,8 +70,8 @@ where
 ```
 
 ### Check sensor coverage of clusters in production cloud accounts
+Check the runtime sensor status of the clusters that live in cloud accounts used for production, based on the environment each account has in its Wiz projects. This helps verify that the clusters that matter most are covered, and whether their sensors are end of life.
 
-Uses the environment each cloud account has in its Wiz projects.
 
 ```sql+postgres
 with production_accounts as (
@@ -120,6 +122,7 @@ where
 ```
 
 ### List clusters running an end-of-life Kubernetes version
+Find the clusters running a Kubernetes version that is no longer supported, next to the latest available version. This helps plan upgrades for clusters that no longer receive security fixes.
 
 ```sql+postgres
 select
@@ -146,6 +149,7 @@ where
 ```
 
 ### List the clusters of a project
+List the clusters that belong to a given Wiz project, with their sensor status. This is useful to review the coverage of the clusters one team or environment owns.
 
 ```sql+postgres
 select
