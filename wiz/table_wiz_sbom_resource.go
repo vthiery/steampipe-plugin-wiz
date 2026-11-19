@@ -2,21 +2,21 @@ package wiz
 
 import (
 	"context"
-	"regexp"
 
-	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin/transform"
+	"github.com/turbot/steampipe-plugin-sdk/v6/grpc/proto"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin/transform"
 	"github.com/turbot/steampipe-plugin-wiz/api"
 )
 
-// Filter values are only sent to the API when they look valid. A qual whose
-// value is only known at execution time (for example from a subquery) can
-// reach the plugin as a placeholder, and Postgres filters the rows anyway.
-var (
-	sbomResourceTypePattern = regexp.MustCompile(`^[A-Z][A-Z_]*$`)
-	sbomResourceIdPattern   = regexp.MustCompile(`^[0-9a-fA-F-]{36}$`)
-)
+// qualPlaceholder is what Steampipe passes for a qual whose value is only known
+// while the query runs, such as an uncorrelated subquery:
+//
+//	where type = (select 'CONTAINER_IMAGE')
+//
+// It is not a value the API can filter on, so it is not sent. Postgres applies
+// the qual to the returned rows anyway.
+const qualPlaceholder = "?"
 
 //// TABLE DEFINITION
 
@@ -55,10 +55,14 @@ func listWizSBOMResources(ctx context.Context, d *plugin.QueryData, _ *plugin.Hy
 	}
 
 	options := &api.ListSBOMResourcesRequestConfiguration{}
-	if id := d.EqualsQualString("id"); sbomResourceIdPattern.MatchString(id) {
+	if id := d.EqualsQualString("id"); id == qualPlaceholder {
+		plugin.Logger(ctx).Debug("wiz_sbom_resource.listWizSBOMResources", "id_qual", "placeholder, not sent to the API")
+	} else {
 		options.ResourceId = id
 	}
-	if resourceType := d.EqualsQualString("type"); sbomResourceTypePattern.MatchString(resourceType) {
+	if resourceType := d.EqualsQualString("type"); resourceType == qualPlaceholder {
+		plugin.Logger(ctx).Debug("wiz_sbom_resource.listWizSBOMResources", "type_qual", "placeholder, not sent to the API")
+	} else {
 		options.ResourceType = resourceType
 	}
 

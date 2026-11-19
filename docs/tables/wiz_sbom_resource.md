@@ -16,6 +16,7 @@ Filter on `type` (for example `REPOSITORY_BRANCH` or `CONTAINER_IMAGE`) or `id` 
 ## Examples
 
 ### Basic info
+List the container images that have an SBOM, with the number of artifacts and versions in each. Change the `type` to look at another kind of resource.
 
 ```sql+postgres
 select
@@ -44,6 +45,7 @@ where
 ```
 
 ### Count resources with an SBOM per type
+Count the resources with an SBOM for each resource type, with the total number of artifacts. This gives a quick view of SBOM coverage across repositories, images, virtual machines and the other resource types.
 
 ```sql+postgres
 select
@@ -72,6 +74,7 @@ order by
 ```
 
 ### List the repository branches with an SBOM
+List the repository branches Wiz holds an SBOM for. Use it to check that the repositories you expect are covered.
 
 Repository branch names have the form `owner/repository/branch`.
 
@@ -102,6 +105,7 @@ order by
 ```
 
 ### List the container images of a project with an SBOM
+List the container images of a given project that have an SBOM. This helps check SBOM coverage for the images one team or environment owns.
 
 ```sql+postgres
 select
